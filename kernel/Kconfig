@@ -1,19 +1,4 @@
-menu "Platform Selection"
-    choice ARCH
-    prompt "Architecture"
-    default ARCH_QEMU
-
-    config ARCH_QEMU
-    bool "TI Stellaris qemu"
-
-    config ARCH_SEEEDPRO
-    bool "Seeeduino Arch Pro board"
-
-    config ARCH_STM32F4
-    bool "STM32F4 Discovery board"
-endchoice
-
-endmenu
+source "../kernel/hal/arch/Kconfig"
 
 menu "Kernel Configuration"
 endmenu
@@ -21,6 +6,10 @@ endmenu
 config KMEM_SIZE
     int "Kernel memory size (KB)"
     default 4
+
+config KMEM_FLASH_SIZE
+    int "Kernel Flash memory size (KB)"
+    default 128
 
 menu "Subsystems"
     menu "Filesystems"

@@ -1,0 +1,66 @@
+menu "Platform Selection"
+
+choice ARCH
+    prompt "Architecture"
+    default ARCH_QEMU
+
+    config ARCH_QEMU
+    bool "TI Stellaris qemu"
+
+    config ARCH_LPC176X
+    bool "LPC176X"
+    help
+        Enable support for NXP LPC176x systems
+
+    config ARCH_STM32F4
+    bool "STM32F4"
+    help
+        Enable support for ST STM32F4 systems
+endchoice
+
+source "../kernel/hal/arch/stm32f4/Kconfig"
+source "../kernel/hal/arch/lpc176x/Kconfig"
+
+
+config FLASH_SIZE_2MB
+	bool
+config FLASH_SIZE_1MB
+	bool
+config FLASH_SIZE_512KB
+	bool
+config FLASH_SIZE_256KB
+	bool
+config FLASH_SIZE_128KB
+	bool
+
+config RAM_SIZE_192KB
+	bool
+config RAM_SIZE_128KB
+	bool
+config RAM_SIZE_32KB
+	bool
+config RAM_SIZE_16KB
+	bool
+
+choice 
+    prompt "Board"
+config MACH_STM32F407Discovery
+    bool "STM32F407Discovery"
+    depends on (ARCH_STM32F407_G || ARCH_STM32F407_E)
+    default y
+config MACH_STM32F411Discovery
+    bool "STM32F411Discovery"
+    depends on (ARCH_STM32F411_E || ARCH_STM32F411_C)
+    default y
+
+config MACH_LPC1768MBED
+    bool "LPC1768MBED"
+    depends on ARCH_LPC1768
+config MACH_SEEEDPRO
+    bool "SEEEDPRO"
+    depends on ARCH_LPC1768
+    default y
+
+endchoice
+
+endmenu

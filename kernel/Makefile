@@ -1,24 +1,5 @@
 include ../kconfig/.config
-ifeq ($(ARCH_SEEEDPRO),y)
-	CPU=cortex-m
-	BOARD=lpc1768
-	CFLAGS+=-mcpu=cortex-m3
-endif
-
-ifeq ($(ARCH_QEMU),y)
-	CPU=cortex-m
-	BOARD=stellaris
-	CFLAGS+=-mcpu=cortex-m3
-endif
-
-ifeq ($(ARCH_STM32F4),y)
-	CPU=cortex-m
-	BOARD=stm32f4
-	CFLAGS+=-DSTM32F4 -mcpu=cortex-m4 -mfloat-abi=soft
-endif
-FLASH_ORIGIN?=0x0
-FLASH_SIZE?=256K
-CFLAGS+=-DFLASH_ORIGIN=$(FLASH_ORIGIN)
+include ../config.mk
 
 CROSS_COMPILE?=arm-none-eabi-
 CC:=$(CROSS_COMPILE)gcc
@@ -28,7 +9,7 @@ LIBNAME:=libkernel.a
 PREFIX:=$(PWD)/build
 #Target flags
 CFLAGS+=-mthumb -mlittle-endian -mthumb-interwork
-CFLAGS+=-DCORE_M3 -DBOARD_$(BOARD)
+CFLAGS+=-DCORE_M3 -DBOARD_$(CHIP)
 CFLAGS+=-DKLOG_LEVEL=6
 CFLAGS+=-DCONFIG_KMEM_SIZE=$(KMEM_SIZE)
 #Include paths
@@ -44,7 +25,7 @@ CFLAGS+=-ggdb
 ASFLAGS:=-mcpu=cortex-m3 -mthumb -mlittle-endian -mthumb-interwork -ggdb
 
 
-OBJS-y:=  hal/cpu/$(CPU).o hal/arch/$(BOARD).o hal/tools.o
+OBJS-y:=  hal/cpu/$(CPU).o hal/arch/$(CHIP)/$(CHIP).o hal/tools.o
 OBJS-y+= \
 	hal/startup.o			\
 	svc.o				\
@@ -79,10 +60,10 @@ syscall_table.c: syscall_table_gen.py
 	python2 $^
 
 hal/regs.h: 
-	./hal/def_reg.py hal/cpu/$(CPU).def hal/arch/$(BOARD).def
+	./hal/def_reg.py hal/cpu/$(CPU).def hal/arch/$(CHIP)/$(CHIP).def
 
 hal/startup.c:
-	./hal/def_irq.py hal/cpu/$(CPU)_irq.def hal/arch/$(BOARD)_irq.def
+	./hal/def_irq.py hal/cpu/$(CPU)_irq.def hal/arch/$(CHIP)/$(CHIP)_irq.def
 
 
 syscall_table.h: syscall_table.c

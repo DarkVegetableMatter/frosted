@@ -1,25 +1,10 @@
 -include kconfig/.config
+-include config.mk
 
-ifeq ($(ARCH_SEEEDPRO),y)
-	CPU=cortex-m
-	BOARD=lpc1768
-	RAM_BASE=0x10000000
-	CFLAGS+=-DSEEEDPRO -mcpu=cortex-m3
-endif
-
-ifeq ($(ARCH_QEMU),y)
-	CPU=cortex-m
-	BOARD=stellaris
-	CFLAGS+=-DSTELLARIS -mcpu=cortex-m3
-endif
-
-ifeq ($(ARCH_STM32F4),y)
-	CPU=cortex-m
-	BOARD=stm32f4
-	CFLAGS+=-DSTM32F4 -mcpu=cortex-m4 -mfloat-abi=soft
-	FLASH_SIZE=1024K
-	FLASH_ORIGIN=0x08000000
-endif
+CROSS_COMPILE?=arm-none-eabi-
+CC:=$(CROSS_COMPILE)gcc
+AS:=$(CROSS_COMPILE)as
+AR:=$(CROSS_COMPILE)ar
 
 ifeq ($(FRESH),y)
 	CFLAGS+=-DCONFIG_FRESH=1
@@ -30,14 +15,7 @@ ifeq ($(PRODCONS),y)
 endif
 
 
-RAM_BASE?=0x20000000
-FLASH_ORIGIN?=0x0
-FLASH_SIZE?=256K
-CFLAGS+=-DFLASH_ORIGIN=$(FLASH_ORIGIN)
 
-CROSS_COMPILE?=arm-none-eabi-
-CC:=$(CROSS_COMPILE)gcc
-AS:=$(CROSS_COMPILE)as
 CFLAGS+=-mthumb -mlittle-endian -mthumb-interwork -Ikernel -DCORE_M3 -Iinclude -fno-builtin -ffreestanding -DKLOG_LEVEL=6
 PREFIX:=$(PWD)/build
 LDFLAGS:=-gc-sections -nostartfiles -ggdb -L$(PREFIX)/lib 
@@ -80,11 +58,8 @@ CFLAGS-$(GPIO_SEEEDPRO)+=-DCONFIG_GPIO_SEEEDPRO
 OBJS-$(GPIO_STM32F4)+=kernel/drivers/gpio/gpio_stm32f4.o
 CFLAGS-$(GPIO_STM32F4)+=-DCONFIG_GPIO_STM32F4
 
-CFLAGS+=$(CFLAGS-y)
 
-SHELL=/bin/bash
-APPS_START = 0x20000
-PADTO = $$(($(FLASH_ORIGIN)+$(APPS_START)))
+CFLAGS+=$(CFLAGS-y)
 
 all: image.bin
 
@@ -101,27 +76,39 @@ $(PREFIX)/lib/libfrosted.a:
 	make -C libfrosted
 
 image.bin: kernel.elf apps.elf
-	$(CROSS_COMPILE)objcopy -O binary --pad-to=$(PADTO) kernel.elf $@
+	export PADTO=`python -c "print ( $(KMEM_FLASH_SIZE) * 1024) + int('$(FLASH_ORIGIN)', 16)"`;	\
+	$(CROSS_COMPILE)objcopy -O binary --pad-to=$$PADTO kernel.elf $@
 	$(CROSS_COMPILE)objcopy -O binary apps.elf apps.bin
 	cat apps.bin >> $@
 
 
 apps/apps.ld: apps/apps.ld.in
-	export KMEM_SIZE_B=`expr $(KMEM_SIZE) \* 1024`; \
-	export KMEM_SIZE_B_HEX=`printf 0x%X $$KMEM_SIZE_B`;	\
+	export KMEM_SIZE_B=`python -c "print '0x%X' % ( $(KMEM_SIZE) * 1024)"`;	\
+	export AMEM_SIZE_B=`python -c "print '0x%X' % ( ($(RAM_SIZE) - $(KMEM_SIZE)) * 1024)"`;	\
+	export KFLASHMEM_SIZE_B=`python -c "print '0x%X' % ( $(KMEM_FLASH_SIZE) * 1024)"`;	\
+	export AFLASHMEM_SIZE_B=`python -c "print '0x%X' % ( ($(FLASH_SIZE) - $(KMEM_FLASH_SIZE)) * 1024)"`;	\
 	cat $^ | sed -e "s/__FLASH_ORIGIN/$(FLASH_ORIGIN)/g" | \
-			 sed -e "s/__FLASH_SIZE/$(FLASH_SIZE)/g" | \
+			 sed -e "s/__KFLASHMEM_SIZE/$$KFLASHMEM_SIZE_B/g" | \
+			 sed -e "s/__AFLASHMEM_SIZE/$$AFLASHMEM_SIZE_B/g" | \
 			 sed -e "s/__RAM_BASE/$(RAM_BASE)/g" |\
-			 sed -e "s/__KMEM_SIZE/` printf 0x%x $$KMEM_SIZE_B_HEX`/g" \
+			 sed -e "s/__KMEM_SIZE/$$KMEM_SIZE_B/g" |\
+			 sed -e "s/__AMEM_SIZE/$$AMEM_SIZE_B/g" \
 			 >$@
-
 
 apps.elf: $(PREFIX)/lib/libfrosted.a $(APPS-y) apps/apps.ld
 	$(CC) -o $@  $(APPS-y) -Tapps/apps.ld -lfrosted -lc -lfrosted -Wl,-Map,apps.map  $(LDFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)
 
+kernel/hal/arch/$(CHIP)/$(CHIP).ld: kernel/hal/arch/$(CHIP)/$(CHIP).ld.in
+	export KMEM_SIZE_B=`python -c "print '0x%X' % ( $(KMEM_SIZE) * 1024)"`;	\
+	export KFLASHMEM_SIZE_B=`python -c "print '0x%X' % ( $(KMEM_FLASH_SIZE) * 1024)"`;	\
+	cat $^ | sed -e "s/__FLASH_ORIGIN/$(FLASH_ORIGIN)/g" | \
+			 sed -e "s/__KFLASHMEM_SIZE/$$KFLASHMEM_SIZE_B/g" | \
+			 sed -e "s/__RAM_BASE/$(RAM_BASE)/g" |\
+			 sed -e "s/__KMEM_SIZE/$$KMEM_SIZE_B/g" \
+			 >$@
 
-kernel.elf: $(PREFIX)/lib/libkernel.a $(OBJS-y)
-	$(CC) -o $@   -Tkernel/hal/arch/$(BOARD).ld $(OBJS-y) -lkernel -Wl,-Map,kernel.map  $(LDFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)
+kernel.elf: $(PREFIX)/lib/libkernel.a $(OBJS-y) kernel/hal/arch/$(CHIP)/$(CHIP).ld
+	$(CC) -o $@   -Tkernel/hal/arch/$(CHIP)/$(CHIP).ld $(OBJS-y) -lkernel -Wl,-Map,kernel.map  $(LDFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)
 
 qemu: image.bin 
 	qemu-system-arm -semihosting -M lm3s6965evb --kernel image.bin -serial stdio -S -gdb tcp::3333
@@ -138,5 +125,6 @@ clean:
 	@rm -f $(OBJS-y)
 	@rm -f *.map *.bin *.elf
 	@rm -f apps/apps.ld
+	@rm -f kernel/hal/arch/$(CHIP).ld
 	@find . |grep "\.o" | xargs -x rm -f
 
