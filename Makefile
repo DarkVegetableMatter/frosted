@@ -125,6 +125,6 @@ clean:
 	@rm -f $(OBJS-y)
 	@rm -f *.map *.bin *.elf
 	@rm -f apps/apps.ld
-	@rm -f kernel/hal/arch/$(CHIP).ld
+	@rm -f kernel/hal/arch/$(CHIP)/$(CHIP).ld
 	@find . |grep "\.o" | xargs -x rm -f
 

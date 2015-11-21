@@ -1,6 +1,18 @@
 include ../kconfig/.config
 include ../config.mk
 
+ifeq ($(ARCH_STM32F4),y)
+ifeq ($(CLK_48MHZ),y)
+	CFLAGS+=-DCLK_SPEED=48
+endif
+ifeq ($(CLK_96MHZ),y)
+	CFLAGS+=-DCLK_SPEED=96
+endif
+ifeq ($(CLK_168MHZ),y)
+	CFLAGS+=-DCLK_SPEED=168
+endif
+endif
+
 CROSS_COMPILE?=arm-none-eabi-
 CC:=$(CROSS_COMPILE)gcc
 AS:=$(CROSS_COMPILE)as

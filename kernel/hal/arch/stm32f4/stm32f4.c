@@ -88,8 +88,6 @@ const uint32_t SYS_CLOCK =  160000000;
 #define FLASH_ACR_MASK          (0x0F)
 #define FLASH_LATENCY           (5)
 
-#define PLL_CONFIG_VAL          (0x28405408)
-
 #define RCC_PRE0_MASK   (0x000000F0)
 #define RCC_PRE1_MASK   (0x00001C00)
 #define RCC_PRE2_MASK   (0x0000E000)
@@ -97,6 +95,24 @@ const uint32_t SYS_CLOCK =  160000000;
 #define HWCLOCK_DIV2  (0x1000)
 #define HWCLOCK_DIV4  (0x1400)
 #define VOLTREG_MODE (0x0000C000)
+
+#if CLK_SPEED == 48
+#define PLL_CONFIG_VAL  ((8 << 0) |  \
+                                                    (96 << 6) | \
+                                                    (((2>>1)-1) << 16) | \
+                                                    (1 << 22) | \
+                                                    (2 << 24) )
+#elif CLK_SPEED == 96
+#define PLL_CONFIG_VAL  ((8 << 0) |  \
+                                                    (384 << 6) | \
+                                                    (((4>>1)-1) << 16) | \
+                                                    (1 << 22) | \
+                                                    (7 << 24) )
+#elif CLK_SPEED == 168
+#define PLL_CONFIG_VAL          (0x28405408)
+#else
+#error "No clock speed defined"
+#endif
 
 
 static void clock_on(uint32_t clk)
@@ -150,7 +166,6 @@ int hal_board_init(void)
         noop();
     
     tmp = 0x28405408; /* TODO: Figure out correct bit mapping, using hardcoded value for now */
-
 
     SET_REG(SYSREG_RCC_PLLCFGR, PLL_CONFIG_VAL);
 

@@ -23,7 +23,7 @@
 /* The following needs to be defined by
  * the application code
  */
-void (*init)(void *arg) = (void (*)(void*))(FLASH_ORIGIN + 0x20000); /* Expected init process text at 128 KB */
+void (*init)(void *arg) = (void (*)(void*))(FLASH_ORIGIN + APPS_ORIGIN); /* Expected init process text at 128 KB */
 
 static int (*_klog_write)(int, const void *, unsigned int) = NULL;
     

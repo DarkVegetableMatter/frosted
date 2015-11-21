@@ -23,24 +23,38 @@ source "../kernel/hal/arch/lpc176x/Kconfig"
 
 
 config FLASH_SIZE_2MB
-	bool
+        bool
 config FLASH_SIZE_1MB
-	bool
+        bool
 config FLASH_SIZE_512KB
-	bool
+        bool
 config FLASH_SIZE_256KB
-	bool
+        bool
 config FLASH_SIZE_128KB
-	bool
+        bool
 
 config RAM_SIZE_192KB
-	bool
+        bool
 config RAM_SIZE_128KB
-	bool
+        bool
 config RAM_SIZE_32KB
-	bool
+        bool
 config RAM_SIZE_16KB
-	bool
+        bool
+
+#Temp hack to allow '407 & '411 clock setups to coexist
+choice
+    prompt "Clock Speed"
+    config CLK_48MHZ
+        bool "48MHz"
+        depends on (ARCH_STM32F411_E || ARCH_STM32F411_C)
+    config CLK_96MHZ
+        bool "96MHz"
+        depends on (ARCH_STM32F411_E || ARCH_STM32F411_C)
+    config CLK_168MHZ
+        bool "168MHz"
+        depends on (ARCH_STM32F407_G || ARCH_STM32F407_E)
+endchoice
 
 choice 
     prompt "Board"
