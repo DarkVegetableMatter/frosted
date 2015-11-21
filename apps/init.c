@@ -30,7 +30,7 @@
 int (** __syscall__)( uint32_t, uint32_t, uint32_t, uint32_t, uint32_t ) = (int (**)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t)) (0xDCUL); 
 #endif
 
-#ifdef SEEEDPRO
+#ifdef LPC176X
 int (** __syscall__)( uint32_t, uint32_t, uint32_t, uint32_t, uint32_t ) = (int (**)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t)) 0xCCUL; 
 #endif
 
@@ -95,7 +95,7 @@ void idling(void *arg)
 # define LED1 "/dev/gpio_3_13"
 # define LED2 "/dev/gpio_3_14"
 # define LED3 "/dev/gpio_3_15"
-#elif defined (SEEEDPRO)
+#elif defined (LPC176X)
 # define LED0 "/dev/gpio_1_18"
 # define LED1 "/dev/gpio_1_20"
 # define LED2 "/dev/gpio_1_21"

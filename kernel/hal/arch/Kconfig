@@ -2,10 +2,12 @@ menu "Platform Selection"
 
 choice ARCH
     prompt "Architecture"
-    default ARCH_QEMU
+    default ARCH_STELLARIS
 
-    config ARCH_QEMU
-    bool "TI Stellaris qemu"
+    config ARCH_STELLARIS
+    bool "STELLARIS"
+    help
+        Enable support for TI Stellaris systems
 
     config ARCH_LPC176X
     bool "LPC176X"
@@ -20,6 +22,7 @@ endchoice
 
 source "../kernel/hal/arch/stm32f4/Kconfig"
 source "../kernel/hal/arch/lpc176x/Kconfig"
+source "../kernel/hal/arch/stellaris/Kconfig"
 
 
 config FLASH_SIZE_2MB
@@ -36,6 +39,8 @@ config FLASH_SIZE_128KB
 config RAM_SIZE_192KB
         bool
 config RAM_SIZE_128KB
+        bool
+config RAM_SIZE_64KB
         bool
 config RAM_SIZE_32KB
         bool
@@ -73,6 +78,11 @@ config MACH_LPC1768MBED
 config MACH_SEEEDPRO
     bool "SEEEDPRO"
     depends on ARCH_LPC1768
+    default y
+
+config MACH_LM3S6965EVB
+    bool "lm3s6965evb"
+    depends on ARCHLM3S6965
     default y
 
 endchoice

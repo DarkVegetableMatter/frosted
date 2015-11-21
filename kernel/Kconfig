@@ -38,7 +38,7 @@ menu "Subsystems"
         default y
 
         config GPIO_SEEEDPRO
-        depends on ARCH_SEEEDPRO
+        depends on ARCH_STELLARIS
         bool "Arch Seeed pro GPIO driver"
         default y
 

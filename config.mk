@@ -4,15 +4,15 @@ ifeq ($(ARCH_LPC176X),y)
 	CHIP=lpc176x
 	FLASH_ORIGIN=0x00000000
 	RAM_BASE=0x10000000
-	CFLAGS+=-DSEEEDPRO -mcpu=cortex-m3
+	CFLAGS+=-DLPC176X -mcpu=cortex-m3
 endif
 
-ifeq ($(ARCH_QEMU),y)
+ifeq ($(ARCH_STELLARIS),y)
 	CPU=cortex-m
 	CHIP=stellaris
 	FLASH_ORIGIN=0x00000000
 	RAM_BASE=0x20000000
-	CFLAGS+=-mcpu=cortex-m3
+	CFLAGS+=-DSTELLARIS -mcpu=cortex-m3
 endif
 
 ifeq ($(ARCH_STM32F4),y)
@@ -45,6 +45,9 @@ endif
 ifeq ($(RAM_SIZE_128KB),y)
 	RAM_SIZE=128
 endif
+ifeq ($(RAM_SIZE_64KB),y)
+	RAM_SIZE=64
+endif
 ifeq ($(RAM_SIZE_32KB),y)
 	RAM_SIZE=32
 endif
@@ -52,10 +55,6 @@ ifeq ($(RAM_SIZE_16KB),y)
 	RAM_SIZE=16
 endif
 
-
-RAM_BASE?=0x20000000
-FLASH_ORIGIN?=0x0
-FLASH_SIZE?=256K
 APPS_ORIGIN=$$(( $(KMEM_FLASH_SIZE) * 1024))
 CFLAGS+=-DFLASH_ORIGIN=$(FLASH_ORIGIN)
 CFLAGS+=-DAPPS_ORIGIN=$(APPS_ORIGIN)
