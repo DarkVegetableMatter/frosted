@@ -12,6 +12,10 @@ ifeq ($(ARCH_QEMU),y)
 	CFLAGS+=-DSTELLARIS
 endif
 
+ifeq ($(ARCH_STM32F4),y)
+	CFLAGS+=-DSTM32F4 -mfloat-abi=soft
+endif
+
 CROSS_COMPILE?=arm-none-eabi-
 CC:=$(CROSS_COMPILE)gcc
 AS:=$(CROSS_COMPILE)as

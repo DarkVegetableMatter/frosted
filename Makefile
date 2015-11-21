@@ -119,7 +119,7 @@ apps.elf: $(PREFIX)/lib/libfrosted.a $(APPS-y) apps/apps.ld
 	$(CC) -o $@  $(APPS-y) -Tapps/apps.ld -lfrosted -lc -lfrosted -Wl,-Map,apps.map  $(LDFLAGS) $(CFLAGS) $(EXTRA_CFLAGS)
 
 kernel/libopencm3/lib/libopencm3_$(BOARD).a:
-	make -C kernel/libopencm3
+	FP_FLAGS="-mfloat-abi=soft" make -C kernel/libopencm3
 
 $(PREFIX)/lib/libkernel.a: kernel/libopencm3/lib/libopencm3_$(BOARD).a
 
@@ -138,7 +138,7 @@ menuconfig:
 
 clean:
 	@make -C kernel clean
-	@make -C kernel/libopencm3 clean
+#	@make -C kernel/libopencm3 clean
 	@make -C libfrosted clean
 	@rm -f $(OBJS-y)
 	@rm -f *.map *.bin *.elf

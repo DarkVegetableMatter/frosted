@@ -17,6 +17,7 @@
  *      Authors: Daniele Lacamera, Maxime Vincent
  *
  */  
+#include <libopencm3/stm32/rcc.h>
 #include "frosted.h"
 #define IDLE() while(1){do{}while(0);}
 
@@ -49,6 +50,8 @@ void frosted_init(void)
             
     //hal_board_init();
     // TODO: initialize hw via libopencm3
+    
+    rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_84MHZ]);
 
     ktimer_init();
 

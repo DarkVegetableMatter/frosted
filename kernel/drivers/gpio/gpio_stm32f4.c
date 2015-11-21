@@ -3,11 +3,11 @@
 #include "ioctl.h"
 
 
-
+#if 0
 extern struct hal_iodev GPIOA;
 extern struct hal_iodev GPIOD;
 extern struct hal_iodev GPIOG;
-
+#endif
 static int gpio_subsys_initialized = 0;
 
 extern int stm32_pio_mode(uint32_t port, uint32_t pin, uint32_t mode);
@@ -96,7 +96,7 @@ static int devgpio_write(int fd, const void *buf, unsigned int len)
     if (gpio_check_fd(fd, &fno) != 0)
         return -1;
     a = fno->priv;
-
+#if 0
     if (arg[0] == '1') {
         GPIOREG(a->port)->setr_hi = (1 << a->n);
         return 1;
@@ -106,6 +106,9 @@ static int devgpio_write(int fd, const void *buf, unsigned int len)
     } else {
         return -1;
     }
+#else
+            return 1;
+#endif
 }
 
 static int devgpio_ioctl(int fd, const uint32_t cmd, void *arg)
@@ -115,6 +118,7 @@ static int devgpio_ioctl(int fd, const uint32_t cmd, void *arg)
     if (gpio_check_fd(fd, &fno) != 0)
         return -1;
     a = fno->priv;
+#if 0
     if (cmd == IOCTL_GPIO_ENABLE) {
         GPIOREG(a->port)->mode &= ~(3 << (a->n * 2));
         GPIOREG(a->port)->mode |= (1 << (a->n * 2));
@@ -136,6 +140,7 @@ static int devgpio_ioctl(int fd, const uint32_t cmd, void *arg)
     if (cmd == IOCTL_GPIO_SET_FUNC) {
     }
         /* TODO: Set alternate function for pin */
+#endif
     return 0;
 }
 
@@ -149,7 +154,9 @@ static int devgpio_read(int fd, void *buf, unsigned int len)
         gpio_pid = scheduler_get_cur_pid();
         task_suspend();
         out = SYS_CALL_AGAIN;
-        hal_irq_on(GPIOA.irqn);
+#if 0
+        hal_irq_on(GPIOD.irqn);
+#endif
         mutex_unlock(gpio_mutex);
     } else {
         /* GPIO: get current value */
@@ -183,7 +190,9 @@ static int devgpio_open(const char *path, int flags)
 
 void devgpio_init(struct fnode *dev)
 {
+#if 0
     gpio_mutex = mutex_init();
+#endif
     mod_devgpio.family = FAMILY_FILE;
     mod_devgpio.ops.open = devgpio_open;
     mod_devgpio.ops.read = devgpio_read; 
@@ -193,7 +202,9 @@ void devgpio_init(struct fnode *dev)
     
 
     if (!gpio_subsys_initialized) {
+#if 0
         hal_iodev_on(&GPIOD);
+#endif
         gpio_subsys_initialized++;
     }
 
